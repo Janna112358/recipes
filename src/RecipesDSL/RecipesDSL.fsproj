@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Units.fs" />
+    <Compile Include="Ingredients.fs" />
+    <Compile Include="Printers.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 
