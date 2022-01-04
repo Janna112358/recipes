@@ -1,46 +1,54 @@
 open System
-open RecipesDSL
 
-let lentils = Ingredients.SingleOption {
+open Ingredients
+open References
+open Recipes
+open Printers
+
+let lentils = 
+    let quantity = createQuantity true 200.0 "g"
+    Ingredients.SingleOption {
         Item = "red lentils (dried)"
-        Measure = Some {
-            Quantity        = Ingredients.Quantity 200.0
-            Unit            = Units.Unit.U "g" "gram"
-            IsApproximate   = true
-        }
+        Measure = quantity
         IsOptional  = false
         Prep        = None
         Notes       = []
     }
 
+let noteAboutButter = Reference.create "Like Flora or Violife Block, or a vegan margerine"
+
 let optionalFat = Ingredients.MultipleOptions [
     {
         Item = "vegan butter"
-        // to do: extend Measure so it can also be a descriptive string (like "a bit")
-        Measure = Some { 
-            Quantity        = Ingredients.Quantity 1.0 
-            Unit            = Units.Unit.U "bit" "bit"
-            IsApproximate   = false
-        }
+        Measure = SmallAmount (Some "a bit of")
         IsOptional = true 
         Prep = None 
-        Notes = []
+        Notes = [noteAboutButter]
     }
     {
         Item = "coconut oil"
-        Measure = Some { 
-            Quantity        = Ingredients.Quantity 1.0 
-            Unit            = Units.Unit.U "bit" "bit"
-            IsApproximate   = false
-        }
+        Measure = SmallAmount None
         IsOptional = true 
         Prep = None 
         Notes = []
     }
 ]
 
+let misirWat: Recipe = 
+    let testNote = Reference.create "This recipe is incomplete"
+    let anotherTestNote = Reference.create "Hi"
+    {
+        Ingredients = [lentils; optionalFat]
+        Instructions = [
+            {
+                Header = Some "Method"
+                Text = "Instructions text here"
+                Notes = [testNote; anotherTestNote]
+            }
+        ]
+    }
+
 [<EntryPoint>]
 let main args =
-    printfn "%s" <| Printers.printIngredient lentils
-    printfn "%s" <| Printers.printIngredient optionalFat
+    printRecipe misirWat
     0 // return an integer exit code

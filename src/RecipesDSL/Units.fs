@@ -25,6 +25,21 @@ let units =
         "mL", "mili liter"
         "tbsp", "table spoon"
         "tsp", "teaspoon"
-        "pinch", "pinch"
     ]
-    |> List.map (fun (symbol, name) -> Unit.U symbol name)
+    |> List.map ( fun (symbol, name) -> 
+        { Symbol = symbol; Name = name } )
+
+let tryFindUnit (symbol: string) = 
+    units 
+    |> List.tryFind (fun u -> u.Symbol = symbol)
+
+let tryFindUnitName (name: string) = 
+    units 
+    |> List.tryFind (fun u -> u.Name = name)
+
+type Unit with 
+    static member create (symbol: string) = 
+        match tryFindUnit symbol with 
+        | None -> failwith (sprintf "No unit found with symbol [%s]" symbol)
+        | Some u -> u
+        
