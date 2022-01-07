@@ -20,73 +20,63 @@ let printMeasure measure =
         let approxText = 
             if quantity.IsApproximate then "~" else ""
         let quantityText = 
-            match quantity.Amount with 
-            // %g for compact number formatting
-            | Value value -> sprintf "%g" value
-            | Range (lower, upper) -> sprintf "%g-%g" lower upper
+            sprintf "%g" quantity.Amount
         sprintf "%s%s%s" approxText quantityText quantity.Unit.toString
+
+    | Range rangedQuantity -> 
+        let quantityText = 
+            sprintf "%g-%g" rangedQuantity.Lower rangedQuantity.Upper 
+        sprintf "%s%s" quantityText rangedQuantity.Unit.toString
 
 type Measure with 
     member this.toString = printMeasure this
 
 
-let printSimpleIngredient ingredient refOrder = 
+let printSimpleIngredient ingredient = 
     let measureText = 
         ingredient.Measure.toString
         |> sprintf "%s "
     let prepText =
         ingredient.Prep 
         |> printOption (sprintf ", %s")
-    let references = 
-        ingredient.Notes 
-        |> List.map (fun note -> note.ref refOrder)
-        |> List.toSeq 
-        |> String.concat " "
-    sprintf "%s%s%s%s" measureText ingredient.Item prepText references
+    sprintf "%s%s%s" measureText ingredient.Item prepText
 
 type SimpleIngredient with 
     member this.toString = printSimpleIngredient this
 
 
 let printIngredient ingredient refOrder =    
-    match ingredient with 
-
-    | SingleOption ingredient -> 
-        ingredient.toString refOrder
-
-    | MultipleOptions ingredientList -> 
-        ingredientList 
-        |> List.map ( fun ingr -> ingr.toString refOrder )
-        |> List.toSeq
-        |> String.concat " OR "
+    let primaryText = 
+        ingredient.PrimaryOption.toString 
+    let otherText = 
+        ingredient.OtherOptions
+        |> List.map printSimpleIngredient 
+    let allOptionsText = 
+        Seq.ofList (primaryText :: otherText)
+        |> String.concat " OR " 
+    let refText = 
+        ingredient.Notes 
+        |> List.map (fun note -> note.ref refOrder)
+        |> Seq.ofList 
+        |> String.concat ""
+    sprintf "%s %s" allOptionsText refText
 
 type Ingredient with 
     member this.toString = printIngredient this
 
-
 let printRecipe (recipe: Recipe) = 
-    let refOrder, notes = orderNotes recipe
+    printfn "\n%s" recipe.Name
 
-    let printStep (step: Step) = 
-        let headerText = 
-            step.Header 
-            |> printOption (sprintf "%s\n")
-        let references = 
-            step.Notes 
-            |> List.map (fun note -> note.ref refOrder)
-            |> List.toSeq 
-            |> String.concat " "
-        sprintf "%s%s%s" headerText step.Text references
+    let notesOrder = orderIngredientNotes recipe
     
     printfn "\n--Ingredients--"
     recipe.Ingredients
-    |> List.iter ( fun ing -> printfn "%s" (ing.toString refOrder) )
+    |> List.iter ( fun ing -> printfn "%s" (ing.toString notesOrder) )
     printfn "  ----\n"
     
-    recipe.Instructions
-    |> List.iter ( fun step -> printfn "%s" (printStep step) )
-
     printf "\n--Notes--\n"
-    notes 
-    |> List.iter ( fun note -> printfn "%s" (note.display refOrder) )
+    recipe.Ingredients
+    |> List.collect ( fun ing -> ing.Notes )
+    |> List.iter ( fun note -> 
+        printfn "%s" (note.display notesOrder) )
     printfn "  ----\n"

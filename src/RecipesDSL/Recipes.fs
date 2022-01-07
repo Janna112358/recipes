@@ -5,32 +5,21 @@ open References
 
 type Recipe = 
     {
+        Name:           string 
         Ingredients:    Ingredient list 
-        Instructions:   Step list
+        PostUrl:        string option 
+        PostTitle:      string option 
+        Effort:         EffortScore
     }
-and Step = 
-    {
-        Header:     string option 
-        Text:       string
-        Notes:      Reference list
-    }
+and EffortScore = 
+    | Minimal 
+    | Low 
+    | Medium 
+    | High 
+    | Extreme 
 
-let orderNotes (recipe: Recipe) = 
-    let ingredientNotes = 
-        recipe.Ingredients 
-        |> List.collect ( fun ingredient -> 
-            match ingredient with 
-            | SingleOption ing -> ing.Notes 
-            | MultipleOptions ings -> 
-                ings |> List.collect (fun ing -> ing.Notes) 
-        )
-    let otherNotes = 
-        recipe.Instructions 
-        |> List.collect ( fun step -> step.Notes )
-    let allNotes = ingredientNotes @ otherNotes
-    let notesOrder = 
-        allNotes 
-        |> List.mapi ( fun i note -> (note.Id, i) )
-        |> Map.ofList 
-    notesOrder, allNotes
-
+let orderIngredientNotes (recipe: Recipe) = 
+    recipe.Ingredients 
+    |> List.collect (fun ing -> ing.Notes)
+    |> List.mapi ( fun i note -> (note.Id, i+1) )
+    |> Map.ofList

@@ -7,45 +7,65 @@ open Printers
 
 let lentils = 
     let quantity = createQuantity true 200.0 "g"
-    Ingredients.SingleOption {
-        Item = "red lentils (dried)"
-        Measure = quantity
-        IsOptional  = false
-        Prep        = None
-        Notes       = []
+    let primaryOption = 
+        {
+            Item    = "red lentils (dried)"
+            Measure = quantity 
+            Prep    = None 
+        }
+    {
+        PrimaryOption   = primaryOption
+        OtherOptions    = []
+        IsOptional      = false 
+        Notes           = []
+    }
+
+let onions = 
+    let noteAboutOnions = Reference.create "Preferably white/brown onion, whatever you call that"
+    let quantity = createRange 1. 2. "#" 
+    let primaryOption = 
+        {
+            Item = "onions"
+            Measure = quantity 
+            Prep = None 
+        }
+    {
+        PrimaryOption   = primaryOption
+        OtherOptions    = [] 
+        IsOptional      = false 
+        Notes           = [noteAboutOnions]
     }
 
 let noteAboutButter = Reference.create "Like Flora or Violife Block, or a vegan margerine"
 
-let optionalFat = Ingredients.MultipleOptions [
-    {
-        Item = "vegan butter"
-        Measure = SmallAmount (Some "a bit of")
-        IsOptional = true 
-        Prep = None 
-        Notes = [noteAboutButter]
+let optionalFat = 
+    let primaryOption = 
+        {
+            Item    = "vegan butter"
+            Measure = SmallAmount (Some "a bit of")
+            Prep    = None
+        }
+    let otherOptions = [
+        {
+            Item    = "coconut oil"
+            Measure = SmallAmount None 
+            Prep    = None 
+        }
+    ]
+    { 
+        PrimaryOption   = primaryOption
+        OtherOptions    = otherOptions 
+        IsOptional      = true 
+        Notes           = [noteAboutButter] 
     }
-    {
-        Item = "coconut oil"
-        Measure = SmallAmount None
-        IsOptional = true 
-        Prep = None 
-        Notes = []
-    }
-]
 
 let misirWat: Recipe = 
-    let testNote = Reference.create "This recipe is incomplete"
-    let anotherTestNote = Reference.create "Hi"
     {
-        Ingredients = [lentils; optionalFat]
-        Instructions = [
-            {
-                Header = Some "Method"
-                Text = "Instructions text here"
-                Notes = [testNote; anotherTestNote]
-            }
-        ]
+        Name = "Misir Wat"
+        Ingredients = [lentils; onions; optionalFat]
+        PostUrl = None
+        PostTitle = None 
+        Effort = Medium
     }
 
 [<EntryPoint>]
